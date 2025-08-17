@@ -3,11 +3,12 @@
 int main(int argc, char** argv)
 {
 	PmergeMe sorter;
-	if (sorter.processInput(argc, argv) != 0)
+
+	if (sorter.processInput(argc, argv))
 		return 1;
 
-	std::vector<int>& vec = sorter.getVector();
-	std::list<int>& lst = sorter.getList();
+	std::vector<int> vec = sorter.getVector();
+	std::list<int> lst = sorter.getList();
 
 	sorter.performMergeSortVector(vec);
 	sorter.performMergeSortList(lst);
