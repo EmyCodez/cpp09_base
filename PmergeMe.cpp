@@ -1,40 +1,57 @@
 #include "PmergeMe.hpp"
 
-PmergeMe::PmergeMe() {}
+PmergeMe::PmergeMe() { }
 
-PmergeMe::PmergeMe(const PmergeMe& other) { *this = other; }
+PmergeMe::PmergeMe(const PmergeMe &other) { *this = other; }
 
-PmergeMe& PmergeMe::operator=(const PmergeMe& other) {
-	if (this != &other) {
+PmergeMe& PmergeMe::operator=(const PmergeMe &other)
+{
+	if (this != &other)
+	{
 		this->vector = other.vector;
 		this->list = other.list;
 	}
 	return *this;
 }
 
-PmergeMe::~PmergeMe() {}
+PmergeMe::~PmergeMe() { }
+
+void PmergeMe::setVector(std::vector<int>& v) { this->vector = v; }
+void PmergeMe::setList(std::list<int>& l) { this->list = l; }
+
+std::vector<int>& PmergeMe::getVector() { return this->vector; }
+std::list<int>& PmergeMe::getList() { return this->list; }
 
 int PmergeMe::processInput(int argc, char** argv)
 {
-	if (argc < 2) {
-		std::cerr << "Usage: ./PmergeMe [positive numbers...]" << std::endl;
+	if (argc < 2)
+	{
+		std::cerr << "Usage: ./PmergeMe [positive integers...]" << std::endl;
 		return 1;
 	}
 
 	std::set<int> seen;
 
-	for (int i = 1; i < argc; ++i) {
-		std::string str(argv[i]);
-		if (!std::all_of(str.begin(), str.end(), ::isdigit)) {
-			std::cerr << "Error: Invalid input '" << str << "'" << std::endl;
+	for (int i = 1; i < argc; ++i)
+	{
+		std::string arg(argv[i]);
+		for (size_t j = 0; j < arg.size(); ++j)
+		{
+			if (!std::isdigit(arg[j]))
+			{
+				std::cerr << "Error: Invalid input '" << arg << "'" << std::endl;
+				return 1;
+			}
+		}
+
+		int num = std::atoi(argv[i]);
+		if (num < 0)
+		{
+			std::cerr << "Error: Negative number" << std::endl;
 			return 1;
 		}
-		int num = std::stoi(str);
-		if (num < 0) {
-			std::cerr << "Error: Negative number not allowed" << std::endl;
-			return 1;
-		}
-		if (!seen.insert(num).second) {
+		if (!seen.insert(num).second)
+		{
 			std::cerr << "Error: Duplicate number '" << num << "'" << std::endl;
 			return 1;
 		}
@@ -42,100 +59,144 @@ int PmergeMe::processInput(int argc, char** argv)
 		list.push_back(num);
 	}
 
-	if (vector.size() > MAX_LIMIT) {
-		std::cerr << "Error: Too many numbers (max " << MAX_LIMIT << ")" << std::endl;
+	if (vector.size() > MAX_LIMIT)
+	{
+		std::cerr << "Error: Too many elements (limit is " << MAX_LIMIT << ")" << std::endl;
 		return 1;
 	}
 
 	return 0;
 }
 
-void PmergeMe::insertionSortVector(std::vector<int>& vec, int start, int end)
+void PmergeMe::printVector(std::string word)
 {
-	for (int i = start + 1; i <= end; ++i) {
-		int key = vec[i];
-		int j = i - 1;
-		while (j >= start && vec[j] > key) {
-			vec[j + 1] = vec[j];
-			--j;
-		}
-		vec[j + 1] = key;
-	}
+	std::cout << word;
+	for (size_t i = 0; i < vector.size(); ++i)
+		std::cout << vector[i] << " ";
+	std::cout << std::endl;
 }
 
-void PmergeMe::insertionSortList(std::list<int>::iterator begin, std::list<int>::iterator end)
+void PmergeMe::printList()
 {
-	for (auto it = std::next(begin); it != std::next(end); ++it) {
-		auto key = *it;
-		auto j = it;
-		while (j != begin && *std::prev(j) > key) {
-			*j = *std::prev(j);
-			--j;
-		}
-		*j = key;
-	}
+	std::cout << "List: ";
+	for (std::list<int>::iterator it = list.begin(); it != list.end(); ++it)
+		std::cout << *it << " ";
+	std::cout << std::endl;
 }
 
-void PmergeMe::mergeVector(std::vector<int>& vec, int start, int mid, int end)
+std::vector<int> PmergeMe::generateJacobsthalSequence(int n)
 {
-	std::vector<int> temp;
-	int i = start, j = mid + 1;
-	while (i <= mid && j <= end) {
-		if (vec[i] <= vec[j]) temp.push_back(vec[i++]);
-		else temp.push_back(vec[j++]);
+	std::vector<int> seq;
+	seq.push_back(1);
+	int j1 = 1, j2 = 0;
+
+	while (true)
+	{
+		int j = j1 + 2 * j2;
+		if (j >= n)
+			break;
+		seq.push_back(j);
+		j2 = j1;
+		j1 = j;
 	}
-	while (i <= mid) temp.push_back(vec[i++]);
-	while (j <= end) temp.push_back(vec[j++]);
-	for (int k = 0; k < temp.size(); ++k)
-		vec[start + k] = temp[k];
+
+	for (int i = 1; i < n; ++i)
+	{
+		if (std::find(seq.begin(), seq.end(), i) == seq.end())
+			seq.push_back(i);
+	}
+	return seq;
 }
 
-void PmergeMe::mergeList(std::list<int>::iterator start, std::list<int>::iterator mid, std::list<int>::iterator end)
+void PmergeMe::fordJohnsonVector(std::vector<int>& data)
 {
-	std::list<int> temp;
-	auto i = start;
-	auto j = std::next(mid);
-	while (i != std::next(mid) && j != std::next(end)) {
-		if (*i <= *j) temp.push_back(*i++);
-		else temp.push_back(*j++);
-	}
-	while (i != std::next(mid)) temp.push_back(*i++);
-	while (j != std::next(end)) temp.push_back(*j++);
-
-	auto it = temp.begin();
-	for (auto k = start; k != std::next(end); ++k, ++it)
-		*k = *it;
-}
-
-void PmergeMe::mergeInsertionSortVector(std::vector<int>& vec, int start, int end)
-{
-	if (end - start < 16) {
-		insertionSortVector(vec, start, end);
+	if (data.size() <= 1)
 		return;
+
+	std::vector<int> mainChain;
+	std::vector<int> pending;
+
+	for (size_t i = 0; i + 1 < data.size(); i += 2)
+	{
+		if (data[i] < data[i + 1])
+			std::swap(data[i], data[i + 1]);
+		mainChain.push_back(data[i]);
+		pending.push_back(data[i + 1]);
 	}
-	int mid = (start + end) / 2;
-	mergeInsertionSortVector(vec, start, mid);
-	mergeInsertionSortVector(vec, mid + 1, end);
-	mergeVector(vec, start, mid, end);
+
+	if (data.size() % 2 == 1)
+		pending.push_back(data.back());
+
+	fordJohnsonVector(mainChain);
+
+	if (!pending.empty())
+		mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), pending[0]), pending[0]);
+
+	std::vector<int> jacob = generateJacobsthalSequence(pending.size());
+
+	for (size_t i = 1; i < jacob.size(); ++i)
+	{
+		if (jacob[i] < (int)pending.size())
+		{
+			int val = pending[jacob[i]];
+			auto pos = std::lower_bound(mainChain.begin(), mainChain.end(), val);
+			mainChain.insert(pos, val);
+		}
+	}
+	data = mainChain;
 }
 
-void PmergeMe::mergeInsertionSortList(std::list<int>::iterator start, std::list<int>::iterator end)
+void PmergeMe::fordJohnsonList(std::list<int>& data)
 {
-	if (std::distance(start, end) < 16) {
-		insertionSortList(start, end);
+	if (data.size() <= 1)
 		return;
+
+	std::list<int> mainChain;
+	std::vector<int> pending;
+
+	auto it = data.begin();
+	while (it != data.end())
+	{
+		int first = *it;
+		++it;
+		if (it != data.end())
+		{
+			int second = *it;
+			if (first < second)
+				std::swap(first, second);
+			mainChain.push_back(first);
+			pending.push_back(second);
+			++it;
+		}
+		else
+		{
+			pending.push_back(first);
+		}
 	}
-	auto mid = std::next(start, std::distance(start, end) / 2);
-	mergeInsertionSortList(start, mid);
-	mergeInsertionSortList(std::next(mid), end);
-	mergeList(start, mid, end);
+
+	fordJohnsonList(mainChain);
+
+	if (!pending.empty())
+		mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), pending[0]), pending[0]);
+
+	std::vector<int> jacob = generateJacobsthalSequence(pending.size());
+
+	for (size_t i = 1; i < jacob.size(); ++i)
+	{
+		if (jacob[i] < (int)pending.size())
+		{
+			int val = pending[jacob[i]];
+			mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), val), val);
+		}
+	}
+	data = mainChain;
 }
 
 void PmergeMe::performMergeSortVector(std::vector<int>& vec)
 {
 	printVector("Before: ");
 	auto start = std::chrono::high_resolution_clock::now();
-	mergeInsertionSortVector(vec, 0, vec.size() - 1);
+	fordJohnsonVector(vec);
 	auto end = std::chrono::high_resolution_clock::now();
 	vectorDuration = end - start;
 	printVector("After: ");
@@ -145,26 +206,9 @@ void PmergeMe::performMergeSortVector(std::vector<int>& vec)
 void PmergeMe::performMergeSortList(std::list<int>& lst)
 {
 	auto start = std::chrono::high_resolution_clock::now();
-	mergeInsertionSortList(lst.begin(), std::prev(lst.end()));
+	fordJohnsonList(lst);
 	auto end = std::chrono::high_resolution_clock::now();
 	listDuration = end - start;
 	std::cout << "Time to process a range of " << lst.size() << " elements with std::list : " << listDuration.count() << " us" << std::endl;
 }
 
-void PmergeMe::printVector(const std::string& label)
-{
-	std::cout << label;
-	for (std::vector<int>::iterator it = vector.begin(); it != vector.end(); ++it)
-		std::cout << *it << " ";
-	std::cout << std::endl;
-}
-
-void PmergeMe::printList()
-{
-	for (std::list<int>::iterator it = list.begin(); it != list.end(); ++it)
-		std::cout << *it << " ";
-	std::cout << std::endl;
-}
-
-std::vector<int>& PmergeMe::getVector() { return vector; }
-std::list<int>& PmergeMe::getList() { return list; }
