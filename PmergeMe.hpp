@@ -2,32 +2,28 @@
 #define PMERGEME_HPP
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <list>
-#include <string>
-#include <sstream>
-#include <iterator>
 #include <chrono>
-#include <set>
 #include <algorithm>
+#include <set>
 
 #define MAX_LIMIT 3000
 
-class PmergeMe {
+class PmergeMe
+{
 private:
 	std::vector<int> vector;
 	std::list<int> list;
+
 	std::chrono::duration<double, std::micro> vectorDuration;
 	std::chrono::duration<double, std::micro> listDuration;
 
-	void insertionSortVector(std::vector<int>& vec, int start, int end);
-	void insertionSortList(std::list<int>::iterator begin, std::list<int>::iterator end);
-
-	void mergeVector(std::vector<int>& vec, int start, int mid, int end);
-	void mergeList(std::list<int>::iterator start, std::list<int>::iterator mid, std::list<int>::iterator end);
-
-	void mergeInsertionSortVector(std::vector<int>& vec, int start, int end);
-	void mergeInsertionSortList(std::list<int>::iterator start, std::list<int>::iterator end);
+	// Sorting helpers
+	void fordJohnsonVector(std::vector<int>& data);
+	void fordJohnsonList(std::list<int>& data);
+	std::vector<int> generateJacobsthalSequence(int n);
 
 public:
 	PmergeMe();
@@ -38,10 +34,16 @@ public:
 	int processInput(int argc, char** argv);
 
 	void performMergeSortVector(std::vector<int>& vec);
-	void performMergeSortList(std::list<int>& list);
+	void performMergeSortList(std::list<int>& lst);
 
-	void printVector(const std::string& label);
+	void printVector(std::string word);
 	void printList();
+
+	// Setters & Getters
+	void setVector(std::vector<int>& vector);
+	void setList(std::list<int>& list);
+	std::vector<int>& getVector();
+	std::list<int>& getList();
 };
 
 #endif
