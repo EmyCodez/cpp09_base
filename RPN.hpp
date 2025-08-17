@@ -1,24 +1,25 @@
 #ifndef RPN_HPP
 #define RPN_HPP
 
-#include <iostream>
 #include <stack>
-#include <sstream>
-#include <stdexcept>
 #include <string>
-#include <cctype>
+#include <sstream>
+#include <iostream>
+#include <stdexcept>
+#include <cstdlib>
 
 class RPN {
 private:
-	std::stack<std::string> tokens;
+	std::stack<int> _stack;
 
 public:
-	RPN(const std::string &expression);
+	RPN();
 	RPN(const RPN &other);
 	RPN &operator=(const RPN &other);
 	~RPN();
 
-	void evaluate();
+	void parseAndCalculate(const std::string &expression);
 };
 
 #endif
+
